@@ -1,7 +1,7 @@
 // AnimeCarousel.js
 import React, { useEffect, useState } from 'react';
 import Slider from 'react-slick';
-import { getTopAnimeFromMAL } from './api'; // Import the fetch function
+
 
 function AnimeCarousel() {
   const [topAnime, setTopAnime] = useState([]);
