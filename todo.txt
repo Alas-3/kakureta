@@ -1,0 +1,8 @@
+improve the banners for anime page
+add schedule section
+
+
+important add profiles, use supabase or firebase for profile handling and 
+saved to watchlist and recently watched, liked anime, bookmarked anime.
+
+make bookmarks work

@@ -1,48 +1,79 @@
+"use client"
+
 import Image from "next/image"
 import Link from "next/link"
-import { useRouter } from "next/router"
-import { useEffect, useState } from "react"
+import { useParams } from "next/navigation"
+import { useEffect, useState, useRef } from "react"
+import { Heart, Play, Share2 } from "lucide-react"
+import Hls from "hls.js"
 
 // Fetch anime details from Zoro by its ID
 async function getAnimeDetailsFromZoro(id) {
-  const response = await fetch(`https://kakureta-consumet-api.vercel.app/anime/zoro/info?id=${id}`);
-  const data = await response.json();
+  const response = await fetch(`https://kakureta-consumet-api.vercel.app/anime/zoro/info?id=${id}`)
+  const data = await response.json()
 
   if (!data || !data.episodes) {
-    console.error("Data or episodes missing:", data);
+    console.error("Data or episodes missing:", data)
     return {
       title: "Unknown",
       rating: "N/A",
       synopsis: "No description available",
-      image: "", // Include the image field
+      image: "",
       episodes: [],
-    };
+    }
   }
 
   return {
     title: data.title || "Unknown",
     rating: data.averageScore ? (data.averageScore / 10).toFixed(1) : "N/A",
     synopsis: data.description || "No description available",
-    image: data.image || "", // Ensure you get the image field from the API
+    image: data.image || "",
     episodes: data.episodes.map((ep) => ({
       number: ep.number || "N/A",
       title: ep.title || "Untitled",
-      url: ep.url || "#",
+      id: ep.id || "",
     })),
-  };
+  }
 }
 
+// Fetch video sources for an episode, including subtitles
+async function getVideoSource(episodeId) {
+  try {
+    const response = await fetch(
+      `https://kakureta-consumet-api.vercel.app/anime/zoro/watch?episodeId=${episodeId}&server=vidstreaming`,
+    )
+    const data = await response.json()
+
+    if (data.sources && data.sources.length > 0) {
+      const hlsSource = data.sources.find((source) => source.isM3U8)
+      return {
+        videoUrl: hlsSource ? hlsSource.url : null,
+        subtitles: data.subtitles || [],
+      }
+    }
+    return null
+  } catch (error) {
+    console.error("Error fetching video source:", error)
+    return null
+  }
+}
 
 export default function AnimePage() {
-  const router = useRouter()
-  const { id } = router.query
-
+  const params = useParams()
+  const id = params?.id
+  const videoRef = useRef(null)
+  const hlsRef = useRef(null)
   const [animeDetails, setAnimeDetails] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [selectedEpisode, setSelectedEpisode] = useState(null)
+  const [videoUrl, setVideoUrl] = useState(null)
+  const [subtitles, setSubtitles] = useState([])
+  const [selectedSubtitle, setSelectedSubtitle] = useState(null)
+  const [showControls, setShowControls] = useState(true)
+  const controlsTimeoutRef = useRef(null)
 
   useEffect(() => {
     if (!id) return
-
     const fetchAnimeDetails = async () => {
       setLoading(true)
       try {
@@ -54,14 +85,89 @@ export default function AnimePage() {
         setLoading(false)
       }
     }
-
     fetchAnimeDetails()
   }, [id])
+
+  useEffect(() => {
+    if (!videoUrl || !videoRef.current) return
+
+    if (hlsRef.current) {
+      hlsRef.current.destroy()
+    }
+
+    if (Hls.isSupported()) {
+      const hls = new Hls()
+      hlsRef.current = hls
+      hls.loadSource(videoUrl)
+      hls.attachMedia(videoRef.current)
+      hls.on(Hls.Events.MANIFEST_PARSED, () => {
+        videoRef.current.play().catch((error) => {
+          console.error("Error playing video:", error)
+        })
+      })
+    } else if (videoRef.current.canPlayType("application/vnd.apple.mpegurl")) {
+      videoRef.current.src = videoUrl
+      videoRef.current.play().catch((error) => {
+        console.error("Error playing video:", error)
+      })
+    }
+
+    return () => {
+      if (hlsRef.current) {
+        hlsRef.current.destroy()
+      }
+    }
+  }, [videoUrl])
+
+  const handleMouseMove = () => {
+    setShowControls(true)
+    if (controlsTimeoutRef.current) {
+      clearTimeout(controlsTimeoutRef.current)
+    }
+    controlsTimeoutRef.current = setTimeout(() => {
+      setShowControls(false)
+    }, 3000)
+  }
+
+  useEffect(() => {
+    return () => {
+      if (controlsTimeoutRef.current) {
+        clearTimeout(controlsTimeoutRef.current)
+      }
+    }
+  }, [])
+
+  const handleEpisodeSelect = async (episode) => {
+    setSelectedEpisode(episode)
+    const sourceData = await getVideoSource(episode.id)
+    if (sourceData) {
+      setVideoUrl(sourceData.videoUrl)
+      setSubtitles(sourceData.subtitles)
+
+      const englishSub = sourceData.subtitles.find((sub) => sub.lang.toLowerCase() === "english")
+      if (englishSub) {
+        setSelectedSubtitle(englishSub)
+      }
+    }
+  }
+
+  if (!id) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <h2 className="text-xl font-semibold">Invalid anime ID</h2>
+          <Link href="/" className="text-primary hover:underline">
+            Go back home
+          </Link>
+        </div>
+      </div>
+    )
+  }
 
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
@@ -71,7 +177,7 @@ export default function AnimePage() {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center space-y-4">
           <h2 className="text-xl font-semibold">Anime not found</h2>
-          <Link href="/" className="btn btn-primary">
+          <Link href="/" className="text-primary hover:underline">
             Go back home
           </Link>
         </div>
@@ -81,12 +187,78 @@ export default function AnimePage() {
 
   return (
     <main className="min-h-screen bg-background text-foreground">
-      {/* Hero Section */}
+      {videoUrl && (
+        <div
+          className="fixed inset-0 z-50 bg-black"
+          onMouseMove={handleMouseMove}
+          onMouseLeave={() => setShowControls(false)}
+        >
+          <div className="relative w-full h-full">
+            <button
+              onClick={() => {
+                setVideoUrl(null)
+                if (hlsRef.current) {
+                  hlsRef.current.destroy()
+                }
+              }}
+              className={`absolute top-4 right-4 z-10 p-2 bg-white/10 rounded-full hover:bg-white/20 transition-opacity duration-300 ${
+                showControls ? "opacity-100" : "opacity-0"
+              }`}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-6 w-6 text-white"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+
+            <video ref={videoRef} controls className="w-full h-full" crossOrigin="anonymous">
+              {subtitles.map((subtitle, index) => (
+                <track
+                  key={index}
+                  kind="subtitles"
+                  src={subtitle.url}
+                  srcLang={subtitle.lang.toLowerCase()}
+                  label={subtitle.lang}
+                  default={subtitle.lang.toLowerCase() === "english"}
+                />
+              ))}
+              Your browser does not support the video tag.
+            </video>
+
+            <div
+              className={`absolute bottom-20 right-4 z-10 transition-opacity duration-300 ${
+                showControls ? "opacity-100" : "opacity-0"
+              }`}
+            >
+              <select
+                className="bg-black/50 text-white px-4 py-2 rounded-md backdrop-blur-sm"
+                value={selectedSubtitle?.lang || ""}
+                onChange={(e) => {
+                  const selected = subtitles.find((sub) => sub.lang === e.target.value)
+                  setSelectedSubtitle(selected)
+                }}
+              >
+                <option value="">No subtitles</option>
+                {subtitles.map((subtitle, index) => (
+                  <option key={index} value={subtitle.lang}>
+                    {subtitle.lang}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="relative">
-        {/* Main Image Container */}
         <div className="relative h-[50vh] md:h-[60vh]">
           <Image
-            src={animeDetails.image} // Use the dynamic image from animeDetails
+            src={animeDetails.image || "/placeholder.svg"}
             alt={animeDetails.title}
             fill
             className="object-cover"
@@ -95,9 +267,11 @@ export default function AnimePage() {
           <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
         </div>
 
-        {/* Header */}
         <div className="absolute top-0 left-0 right-0 p-4 flex items-center justify-between">
-          <Link href="/" className="btn btn-circle btn-ghost bg-black/50 text-white backdrop-blur-md">
+          <Link
+            href="/"
+            className="p-2 rounded-full bg-black/50 text-white backdrop-blur-md transition-colors hover:bg-black/70"
+          >
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="h-6 w-6"
@@ -109,7 +283,7 @@ export default function AnimePage() {
             </svg>
           </Link>
           <div className="flex gap-4">
-            <button className="btn btn-circle btn-ghost bg-black/50 text-white backdrop-blur-md">
+            <button className="p-2 rounded-full bg-black/50 text-white backdrop-blur-md transition-colors hover:bg-black/70">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="h-5 w-5"
@@ -125,7 +299,7 @@ export default function AnimePage() {
                 />
               </svg>
             </button>
-            <button className="btn btn-circle btn-ghost bg-black/50 text-white backdrop-blur-md">
+            <button className="p-2 rounded-full bg-black/50 text-white backdrop-blur-md transition-colors hover:bg-black/70">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="h-5 w-5"
@@ -144,70 +318,24 @@ export default function AnimePage() {
           </div>
         </div>
 
-        {/* Bottom Action Buttons */}
-        <div className="absolute -bottom-6 left-0 right-0 flex justify-between px-6">
-          <button className="btn btn-circle bg-primary text-white shadow-lg">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-              />
-            </svg>
-          </button>
+        <div className="absolute -bottom-8 left-0 right-0 flex justify-between px-6">
+        <div className="absolute bottom-0 left-0 right-0 flex justify-between px-6 pb-4">
+      <button className="p-3 rounded-full bg-primary text-white shadow-lg transition-transform hover:scale-105">
+        <Heart className="h-6 w-6" />
+      </button>
 
-          <button className="btn btn-circle btn-primary btn-lg -mb-8 transform translate-y-1 shadow-lg">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-8 w-8"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
-              />
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
-          </button>
+      <button className="p-5 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 text-white -mb-8 transform -translate-y-1/3 shadow-xl transition-all hover:scale-110 hover:shadow-2xl hover:from-blue-600 hover:to-purple-700 focus:outline-none focus:ring-4 focus:ring-purple-300">
+        <Play className="h-10 w-10 fill-current" />
+      </button>
 
-          <button className="btn btn-circle bg-primary text-white shadow-lg">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684z"
-              />
-            </svg>
-          </button>
+      <button className="p-3 rounded-full bg-primary text-white shadow-lg transition-transform hover:scale-105">
+        <Share2 className="h-6 w-6" />
+      </button>
+    </div>
         </div>
       </div>
 
-      {/* Content */}
-      <div className="px-4 pt-12 pb-6 space-y-6">
-        {/* Title and Rating */}
+      <div className="px-4 pt-16 pb-6 space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold">{animeDetails.title}</h1>
           <div className="flex items-center gap-2">
@@ -219,49 +347,46 @@ export default function AnimePage() {
             >
               <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
             </svg>
-            <span className="text-lg">{animeDetails.rating}</span>
+            <span className="text-lg font-semibold">{animeDetails.rating}</span>
           </div>
         </div>
 
-        {/* Tags */}
-        <div className="flex gap-2">
-          <div className="badge badge-outline">drama</div>
-          <div className="badge badge-outline">adventure</div>
-          <div className="badge badge-outline">animation</div>
+        <div className="flex flex-wrap gap-2">
+          <div className="px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium">drama</div>
+          <div className="px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium">adventure</div>
+          <div className="px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium">animation</div>
         </div>
 
-        {/* Synopsis */}
         <div className="space-y-2">
           <h2 className="text-lg font-semibold">Synopsis</h2>
           <p className="text-sm text-muted-foreground leading-relaxed">{animeDetails.synopsis}</p>
         </div>
 
-        {/* Episodes */}
         <div className="space-y-4">
           <h2 className="text-lg font-semibold">Episodes</h2>
           <div className="space-y-4">
             {animeDetails.episodes.length > 0 ? (
               animeDetails.episodes.map((episode, index) => (
-                <div key={index} className="flex gap-4">
+                <div key={index} className="flex gap-4 bg-muted/50 rounded-lg p-3 transition-colors hover:bg-muted/70">
                   <div className="relative w-32 aspect-video rounded-lg overflow-hidden flex-shrink-0 bg-muted">
                     <Image
-                      src={animeDetails.image}
+                      src={animeDetails.image || "/placeholder.svg"}
                       alt={episode.title}
                       fill
                       className="object-cover"
                     />
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-medium text-sm">Episode {episode.number}</h3>
-                    <p className="text-sm text-muted-foreground line-clamp-1">{episode.title}</p>
-                    <a
-                      href={episode.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="btn btn-primary btn-sm mt-2"
+                  <div className="flex-1 min-w-0 flex flex-col justify-between">
+                    <div>
+                      <h3 className="font-medium text-sm">Episode {episode.number}</h3>
+                      <p className="text-sm text-muted-foreground line-clamp-1">{episode.title}</p>
+                    </div>
+                    <button
+                      onClick={() => handleEpisodeSelect(episode)}
+                      className="self-start mt-2 px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/90 transition-colors"
                     >
                       Watch Now
-                    </a>
+                    </button>
                   </div>
                 </div>
               ))

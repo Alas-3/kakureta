@@ -172,3 +172,62 @@ export async function getFeaturedMovie() {
 
   return result;
 }
+
+// pages/api/api.js
+export const getSearchResults = async (query, page) => {
+  try {
+    const response = await fetch(`https://kakureta-consumet-api.vercel.app/anime/zoro/${query}?page=${page}`)
+    const data = await response.json()
+    
+    // Process the results to better handle series vs movies
+    const processedResults = (data.results || []).map(result => {
+      // Extract year and type from the title
+      const yearMatch = result.title.match(/\((\d{4})\)/)
+      const year = yearMatch ? yearMatch[1] : null
+      
+      // Determine if it's a movie or TV series
+      const isMovie = result.title.toLowerCase().includes('movie')
+      const type = isMovie ? 'Movie' : 'TV Series'
+      
+      return {
+        ...result,
+        year,
+        type,
+        duration: result.duration || 'Unknown',
+        // Keep the original title for the MovieList component
+        title: result.title
+      }
+    })
+
+    // Sort results to prioritize main series over movies
+    const sortedResults = processedResults.sort((a, b) => {
+      const aTitle = a.title.toLowerCase()
+      const bTitle = b.title.toLowerCase()
+      const searchQuery = query.toLowerCase()
+
+      // Exact matches get highest priority
+      if (aTitle === searchQuery && bTitle !== searchQuery) return -1
+      if (bTitle === searchQuery && aTitle !== searchQuery) return 1
+
+      // Then prioritize TV series over movies
+      if (a.type !== b.type) {
+        return a.type === 'TV Series' ? -1 : 1
+      }
+
+      // For same type, prefer newer content
+      if (a.year !== b.year) {
+        return (b.year || '0') - (a.year || '0')
+      }
+
+      return 0
+    })
+
+    return {
+      results: sortedResults,
+      totalPages: data.totalPages || 0,
+    }
+  } catch (error) {
+    console.error("Error fetching search results:", error)
+    return { results: [], totalPages: 0 }
+  }
+}
