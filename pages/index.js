@@ -1,7 +1,7 @@
 import { Suspense } from "react"
 import Image from "next/image"
-import BottomNav from "@/pages/components/bottom-nav";
-import  MovieList  from "@/pages/components/movie-list";
+import BottomNav from "./components/bottom-nav";
+import  MovieList  from "./components/movie-list";
 import { getFeaturedMovie, getBestAnime, getPopularAnime } from "@/pages/api/api"
 import { useRouter } from "next/router"
 
