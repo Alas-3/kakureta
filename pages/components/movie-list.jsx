@@ -1,7 +1,8 @@
-import Link from "next/link"
-import AnimeCard from "./movie-card" // Import the AnimeCard component
+"use client";
+import Link from "next/link";
+import AnimeCard from "./movie-card"; // Import the AnimeCard component
 
-export function MovieList({ title, movies, seeAllLink, onAnimeClick }) {
+function MovieList({ title, movies = [], seeAllLink, onAnimeClick }) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -10,20 +11,25 @@ export function MovieList({ title, movies, seeAllLink, onAnimeClick }) {
           See all
         </Link>
       </div>
-      <div className="flex gap-4 overflow-x-auto pb-4 -mx-4 px-4 lg:gap-6 lg:-mx-6 lg:px-6">
-        {movies.map((movie) => (
-          <AnimeCard
-            key={movie.id}
-            id={movie.id}
-            title={movie.title}
-            image={movie.image}
-            year={movie.year}
-            duration={movie.duration}
-            onClick={() => onAnimeClick(movie.title)}
-          />
-        ))}
-      </div>
+      {movies.length > 0 ? (
+        <div className="flex gap-4 overflow-x-auto pb-4 -mx-4 px-4 lg:gap-6 lg:-mx-6 lg:px-6">
+          {movies.map((movie) => (
+            <AnimeCard
+              key={movie.id}
+              id={movie.id}
+              title={movie.title}
+              image={movie.image}
+              year={movie.year}
+              duration={movie.duration}
+              onClick={() => onAnimeClick(movie.title)}
+            />
+          ))}
+        </div>
+      ) : (
+        <p className="text-gray-500">No movies available.</p>
+      )}
     </div>
-  )
+  );
 }
 
+export default MovieList;

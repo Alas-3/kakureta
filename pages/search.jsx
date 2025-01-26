@@ -3,7 +3,7 @@
 import { useState, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import { BottomNav } from "@/pages/components/bottom-nav"
+import BottomNav from "@/pages/components/bottom-nav";
 import { getSearchResults } from "@/pages/api/api"
 
 export default function Search() {
