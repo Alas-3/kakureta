@@ -227,7 +227,9 @@ export async function getRecentAnime() {
   }
 }
 
-// pages/api/api.js
+//pages/api/api.js
+// TODO: Refactor this code block
+// !!! API LINK SHOULD BE TAKEN FROM ENV
 export const getSearchResults = async (query, page) => {
   try {
     const response = await fetch(
