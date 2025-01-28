@@ -1,3 +1,4 @@
+//pages/api/api.js
 const BASE_URL = "https://kakureta-consumet-api.vercel.app";
 
 // Helper function to check if we are in the browser
@@ -136,41 +137,89 @@ export async function getAnimeDetails(id) {
   }
 }
 
-
-// Fetch best anime using Jikan API with caching, limited to the first 20
 // Fetch featured movie with caching
 export async function getFeaturedMovie() {
+  try {
+    const response = await fetch("https://api.jikan.moe/v4/top/anime");
+    const data = await response.json();
+
+    if (!data.data || data.data.length === 0) {
+      return [];
+    }
+
+    const result = data.data
+      .filter(anime => anime.trailer?.embed_url)
+      .slice(0, 5)
+      .map((anime) => ({
+        id: anime.mal_id,
+        title: anime.title || anime.title_english || "No title",
+        images: {
+          jpg: {
+            large_image_url: anime.images?.jpg?.large_image_url || 
+                            anime.images?.webp?.large_image_url ||
+                            anime.images?.jpg?.image_url,
+            image_url: anime.images?.jpg?.image_url
+          }
+        },
+        synopsis: anime.synopsis || "No description available",
+        trailer: {
+          embed_url: anime.trailer.embed_url,
+          images: {
+            maximum_image_url: anime.trailer.images.maximum_image_url || 
+                             anime.trailer.images.large_image_url
+          }
+        }
+      }));
+
+    return result;
+  } catch (error) {
+    console.error("Error fetching featured movie:", error);
+    return [];
+  }
+}
+
+// Add this new function to get recently aired anime
+export async function getRecentAnime() {
   if (isBrowser) {
-    const cachedData = localStorage.getItem("featuredMovieData");
+    const cachedData = localStorage.getItem("recentAnimeData");
 
     if (cachedData) {
-      return JSON.parse(cachedData); // Return cached data if it exists
+      return JSON.parse(cachedData);
     }
   }
 
-  // If not cached, fetch the data
-  const response = await fetch("https://api.jikan.moe/v4/top/anime");
-  const data = await response.json();
+  try {
+    // Fetch recently aired anime from Jikan API
+    const response = await fetch("https://api.jikan.moe/v4/seasons/now?sort=start_date");
+    const data = await response.json();
 
-  // Check if the data has results
-  if (!data.data || data.data.length === 0) {
-    return [];  // Return an empty array if no results are found
+    if (!data.data || data.data.length === 0) {
+      return [];
+    }
+
+    // Process and sort by air date
+    const result = data.data
+      .filter(anime => anime.aired?.from) // Only include anime with air dates
+      .sort((a, b) => new Date(b.aired.from) - new Date(a.aired.from)) // Sort by most recent
+      .slice(0, 20) // Limit to 20 results
+      .map((anime) => ({
+        id: anime.mal_id,
+        title: anime.title,
+        image: anime.images.jpg.image_url,
+        year: anime.year,
+        duration: anime.duration || "N/A",
+        aired: anime.aired.from,
+      }));
+
+    if (isBrowser) {
+      localStorage.setItem("recentAnimeData", JSON.stringify(result));
+    }
+
+    return result;
+  } catch (error) {
+    console.error("Error fetching recent anime:", error);
+    return [];
   }
-
-  // Limit the results to the first 20 and map necessary details
-  const result = data.data.slice(0, 20).map((anime) => ({
-    id: anime.mal_id,
-    title: anime.title || anime.title_english || "No title", // Use English title if available
-    image: anime.images.jpg.image_url || "/placeholder.svg", // Fallback to placeholder if no image
-    description: anime.synopsis || "No description available", // Fallback to "No description" if empty
-  }));
-
-  if (isBrowser) {
-    // Cache the data in localStorage
-    localStorage.setItem("featuredMovieData", JSON.stringify(result));
-  }
-
-  return result;
 }
 
 // pages/api/api.js

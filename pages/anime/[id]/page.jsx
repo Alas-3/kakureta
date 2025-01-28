@@ -1,9 +1,8 @@
-"use client"
-
+//pages/anime/[id]/page.jsx
+import { useEffect, useState, useRef } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { useParams } from "next/navigation"
-import { useEffect, useState, useRef } from "react"
 import { Heart, Play, Share2 } from "lucide-react"
 import Hls from "hls.js"
 
@@ -36,7 +35,39 @@ async function getAnimeDetailsFromZoro(id) {
   }
 }
 
-// Fetch video sources for an episode, including subtitles
+// Update the getAnimeDetailsFromJikan function to prioritize extra large images
+async function getAnimeDetailsFromJikan(title) {
+  try {
+    const searchResponse = await fetch(`https://api.jikan.moe/v4/anime?q=${encodeURIComponent(title)}&limit=1`)
+    const searchData = await searchResponse.json()
+
+    if (!searchData.data || searchData.data.length === 0) {
+      return null
+    }
+
+    const animeData = searchData.data[0]
+    const images = animeData.images
+    
+    // Try to get the best quality image available
+    const bannerImage = 
+      images?.jpg?.large_image_url || 
+      images?.webp?.large_image_url ||
+      images?.jpg?.image_url ||
+      images?.webp?.image_url
+
+    return {
+      bannerImage,
+      genres: animeData.genres.map(genre => genre.name),
+      rating: animeData.score ? animeData.score.toFixed(1) : "N/A",
+      synopsis: animeData.synopsis || "No description available"
+    }
+  } catch (error) {
+    console.error("Error fetching Jikan data:", error)
+    return null
+  }
+}
+
+// Fetch video sources for an episode
 async function getVideoSource(episodeId) {
   try {
     const response = await fetch(
@@ -64,6 +95,7 @@ export default function AnimePage() {
   const videoRef = useRef(null)
   const hlsRef = useRef(null)
   const [animeDetails, setAnimeDetails] = useState(null)
+  const [jikanDetails, setJikanDetails] = useState(null)
   const [loading, setLoading] = useState(true)
   const [selectedEpisode, setSelectedEpisode] = useState(null)
   const [videoUrl, setVideoUrl] = useState(null)
@@ -77,8 +109,16 @@ export default function AnimePage() {
     const fetchAnimeDetails = async () => {
       setLoading(true)
       try {
-        const data = await getAnimeDetailsFromZoro(id)
-        setAnimeDetails(data)
+        const zoroData = await getAnimeDetailsFromZoro(id)
+        setAnimeDetails(zoroData)
+        
+        // Fetch Jikan details using the anime title
+        if (zoroData.title) {
+          const jikanData = await getAnimeDetailsFromJikan(zoroData.title)
+          if (jikanData) {
+            setJikanDetails(jikanData)
+          }
+        }
       } catch (error) {
         console.error("Error fetching anime details:", error)
       } finally {
@@ -256,15 +296,22 @@ export default function AnimePage() {
       )}
 
       <div className="relative">
-        <div className="relative h-[50vh] md:h-[60vh]">
-          <Image
-            src={animeDetails.image || "/placeholder.svg"}
-            alt={animeDetails.title}
-            fill
-            className="object-cover"
-            priority
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
+        <div className="relative h-[60vh] md:h-[70vh] overflow-hidden">
+          <div className="absolute inset-0">
+            <Image
+              src={jikanDetails?.bannerImage || animeDetails.image || "/placeholder.svg"}
+              alt={animeDetails.title}
+              fill
+              className="object-cover"
+              priority
+              quality={100}
+              sizes="100vw"
+              style={{
+                objectPosition: 'center 20%'
+              }}
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-background via-background/70 to-transparent" />
+          </div>
         </div>
 
         <div className="absolute top-0 left-0 right-0 p-4 flex items-center justify-between">
@@ -319,19 +366,17 @@ export default function AnimePage() {
         </div>
 
         <div className="absolute -bottom-8 left-0 right-0 flex justify-between px-6">
-        <div className="absolute bottom-0 left-0 right-0 flex justify-between px-6 pb-4">
-      <button className="p-3 rounded-full bg-primary text-white shadow-lg transition-transform hover:scale-105">
-        <Heart className="h-6 w-6" />
-      </button>
+          <button className="p-3 rounded-full bg-primary text-white shadow-lg transition-transform hover:scale-105">
+            <Heart className="h-6 w-6" />
+          </button>
 
-      <button className="p-5 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 text-white -mb-8 transform -translate-y-1/3 shadow-xl transition-all hover:scale-110 hover:shadow-2xl hover:from-blue-600 hover:to-purple-700 focus:outline-none focus:ring-4 focus:ring-purple-300">
-        <Play className="h-10 w-10 fill-current" />
-      </button>
+          <button className="p-5 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 text-white -mb-8 transform -translate-y-1/3 shadow-xl transition-all hover:scale-110 hover:shadow-2xl hover:from-blue-600 hover:to-purple-700 focus:outline-none focus:ring-4 focus:ring-purple-300">
+            <Play className="h-10 w-10 fill-current" />
+          </button>
 
-      <button className="p-3 rounded-full bg-primary text-white shadow-lg transition-transform hover:scale-105">
-        <Share2 className="h-6 w-6" />
-      </button>
-    </div>
+          <button className="p-3 rounded-full bg-primary text-white shadow-lg transition-transform hover:scale-105">
+            <Share2 className="h-6 w-6" />
+          </button>
         </div>
       </div>
 
@@ -347,19 +392,23 @@ export default function AnimePage() {
             >
               <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
             </svg>
-            <span className="text-lg font-semibold">{animeDetails.rating}</span>
+            <span className="text-lg font-semibold">{jikanDetails?.rating || animeDetails.rating}</span>
           </div>
         </div>
 
         <div className="flex flex-wrap gap-2">
-          <div className="px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium">drama</div>
-          <div className="px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium">adventure</div>
-          <div className="px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium">animation</div>
+          {jikanDetails?.genres.map((genre, index) => (
+            <div key={index} className="px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium">
+              {genre}
+            </div>
+          ))}
         </div>
 
         <div className="space-y-2">
           <h2 className="text-lg font-semibold">Synopsis</h2>
-          <p className="text-sm text-muted-foreground leading-relaxed">{animeDetails.synopsis}</p>
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            {jikanDetails?.synopsis || animeDetails.synopsis}
+          </p>
         </div>
 
         <div className="space-y-4">
@@ -370,10 +419,12 @@ export default function AnimePage() {
                 <div key={index} className="flex gap-4 bg-muted/50 rounded-lg p-3 transition-colors hover:bg-muted/70">
                   <div className="relative w-32 aspect-video rounded-lg overflow-hidden flex-shrink-0 bg-muted">
                     <Image
-                      src={animeDetails.image || "/placeholder.svg"}
+                      src={jikanDetails?.bannerImage || animeDetails.image || "/placeholder.svg"}
                       alt={episode.title}
                       fill
                       className="object-cover"
+                      quality={80}
+                      sizes="(max-width: 768px) 100px, 128px"
                     />
                   </div>
                   <div className="flex-1 min-w-0 flex flex-col justify-between">
@@ -399,4 +450,3 @@ export default function AnimePage() {
     </main>
   )
 }
-

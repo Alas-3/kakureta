@@ -1,4 +1,4 @@
-improve the banners for anime page
+improve the banners for anime page (almost done just ened to add rankings for the 5 anime shown)
 add schedule section
 
 
