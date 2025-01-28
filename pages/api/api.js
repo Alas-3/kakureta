@@ -225,7 +225,8 @@ export async function getRecentAnime() {
 // pages/api/api.js
 export const getSearchResults = async (query, page) => {
   try {
-    const response = await fetch(`${baseUrl}/anime/zoro/${query}?page=${page}`)
+    
+    const response = await fetch(`${BASE_URL}/anime/zoro/${query}?page=${page}`)
     const data = await response.json()
     
     // Process the results to better handle series vs movies
