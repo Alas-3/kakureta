@@ -254,8 +254,9 @@ export default function Home() {
 
   const handleAnimeClick = async (animeTitle) => {
     try {
+      const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
       const response = await fetch(
-        `https://kakureta-consumet-api.vercel.app/anime/zoro/${encodeURIComponent(animeTitle)}?page=1`
+        `${BASE_URL}/anime/zoro/${encodeURIComponent(animeTitle)}?page=1`
       );
       const data = await response.json();
 

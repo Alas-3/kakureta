@@ -7,8 +7,9 @@ export default function AnimeCard({ title, image, year, duration }) {
   const handleAnimeClick = async (animeTitle) => {
     try {
       const encodedTitle = encodeURIComponent(animeTitle);
+      const baseUrl = process.env.NEXT_PUBLIC_CONSUMET_API_URL;
       const response = await fetch(
-        `https://kakureta-consumet-api.vercel.app/anime/zoro/${encodedTitle}?page=1`
+        `${baseUrl}/anime/zoro/${encodedTitle}?page=1`
       );
       const data = await response.json();
 

@@ -1,5 +1,5 @@
 //pages/api/api.js
-const BASE_URL = "https://kakureta-consumet-api.vercel.app";
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
 // Helper function to check if we are in the browser
 const isBrowser = typeof window !== "undefined";
@@ -225,7 +225,7 @@ export async function getRecentAnime() {
 // pages/api/api.js
 export const getSearchResults = async (query, page) => {
   try {
-    const response = await fetch(`https://kakureta-consumet-api.vercel.app/anime/zoro/${query}?page=${page}`)
+    const response = await fetch(`${baseUrl}/anime/zoro/${query}?page=${page}`)
     const data = await response.json()
     
     // Process the results to better handle series vs movies

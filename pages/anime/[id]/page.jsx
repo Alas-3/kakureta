@@ -8,7 +8,8 @@ import Hls from "hls.js"
 
 // Fetch anime details from Zoro by its ID
 async function getAnimeDetailsFromZoro(id) {
-  const response = await fetch(`https://kakureta-consumet-api.vercel.app/anime/zoro/info?id=${id}`)
+  const baseUrl = process.env.NEXT_PUBLIC_CONSUMET_API_URL;
+  const response = await fetch(`${baseUrl}/anime/zoro/info?id=${id}`)
   const data = await response.json()
 
   if (!data || !data.episodes) {
@@ -70,8 +71,9 @@ async function getAnimeDetailsFromJikan(title) {
 // Fetch video sources for an episode
 async function getVideoSource(episodeId) {
   try {
+    const baseUrl = process.env.NEXT_PUBLIC_CONSUMET_API_URL;
     const response = await fetch(
-      `https://kakureta-consumet-api.vercel.app/anime/zoro/watch?episodeId=${episodeId}&server=vidstreaming`,
+      `${baseUrl}/anime/zoro/watch?episodeId=${episodeId}&server=vidstreaming`,
     )
     const data = await response.json()
 
