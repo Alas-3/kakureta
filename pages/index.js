@@ -4,9 +4,14 @@ import { Suspense } from "react";
 import BottomNav from "./components/bottom-nav";
 import MovieList from "./components/movie-list";
 import Footer from "./components/footer";
-import { getFeaturedMovie, getBestAnime, getPopularAnime, getRecentAnime } from "@/pages/api/api";
+import {
+  getFeaturedMovie,
+  getBestAnime,
+  getPopularAnime,
+  getRecentAnime,
+} from "@/pages/api/api";
 import { useRouter } from "next/navigation";
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from "react";
 import { Volume2, VolumeX } from "lucide-react";
 
 function FeaturedMovie({ movies, onAnimeClick }) {
@@ -19,7 +24,7 @@ function FeaturedMovie({ movies, onAnimeClick }) {
 
   const initializeYouTubePlayer = () => {
     if (!movies[currentIndex]?.trailer?.embed_url) return;
-    
+
     if (player) {
       player.destroy();
     }
@@ -38,7 +43,7 @@ function FeaturedMovie({ movies, onAnimeClick }) {
         iv_load_policy: 3,
         origin: window.location.origin,
         widget_referrer: window.location.origin,
-        enablejsapi: 1
+        enablejsapi: 1,
       },
       events: {
         onReady: (event) => {
@@ -58,7 +63,10 @@ function FeaturedMovie({ movies, onAnimeClick }) {
               playerElement.innerHTML = `
                 <div class="w-full h-full bg-black flex items-center justify-center">
                   <img 
-                    src="${movies[currentIndex].images.jpg.large_image_url || movies[currentIndex].images.jpg.image_url}"
+                    src="${
+                      movies[currentIndex].images.jpg.large_image_url ||
+                      movies[currentIndex].images.jpg.image_url
+                    }"
                     alt="${movies[currentIndex].title}"
                     class="w-full h-full object-cover"
                   />
@@ -66,17 +74,17 @@ function FeaturedMovie({ movies, onAnimeClick }) {
               `;
             }
           }
-        }
-      }
+        },
+      },
     });
   };
 
   useEffect(() => {
     // Load YouTube IFrame API
     if (!window.YT) {
-      const tag = document.createElement('script');
-      tag.src = 'https://www.youtube.com/iframe_api';
-      const firstScriptTag = document.getElementsByTagName('script')[0];
+      const tag = document.createElement("script");
+      tag.src = "https://www.youtube.com/iframe_api";
+      const firstScriptTag = document.getElementsByTagName("script")[0];
       firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 
       window.onYouTubeIframeAPIReady = initializeYouTubePlayer;
@@ -96,7 +104,9 @@ function FeaturedMovie({ movies, onAnimeClick }) {
 
   const getYouTubeId = (url) => {
     if (!url) return null;
-    const match = url.match(/(?:embed\/|watch\?v=|youtu.be\/|\/v\/|\/e\/|watch\?feature=player_embedded&v=)([^#\&\?\/]*)/);
+    const match = url.match(
+      /(?:embed\/|watch\?v=|youtu.be\/|\/v\/|\/e\/|watch\?feature=player_embedded&v=)([^#\&\?\/]*)/
+    );
     return match && match[1];
   };
 
@@ -135,8 +145,11 @@ function FeaturedMovie({ movies, onAnimeClick }) {
         </div>
       ) : (
         <div className="absolute inset-0 w-full h-full">
-          <img 
-            src={currentMovie.images.jpg.large_image_url || currentMovie.images.jpg.image_url} 
+          <img
+            src={
+              currentMovie.images.jpg.large_image_url ||
+              currentMovie.images.jpg.image_url
+            }
             alt={currentMovie.title}
             className="w-full h-full object-cover"
           />
@@ -148,9 +161,11 @@ function FeaturedMovie({ movies, onAnimeClick }) {
 
       {/* Content */}
       <div className="absolute bottom-0 left-0 right-0 p-4 lg:p-6 space-y-2">
-        <h1 className="text-2xl lg:text-4xl font-bold text-white">{currentMovie.title}</h1>
+        <h1 className="text-2xl lg:text-4xl font-bold text-white">
+          {currentMovie.title}
+        </h1>
         <div className="flex items-center gap-4">
-          <button 
+          <button
             className="inline-flex items-center px-4 py-2 bg-white text-black rounded-lg hover:bg-white/90 transition-colors"
             onClick={() => onAnimeClick(currentMovie.title)}
           >
@@ -167,11 +182,11 @@ function FeaturedMovie({ movies, onAnimeClick }) {
                 strokeWidth={2}
                 d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
               />
-              <path 
-                strokeLinecap="round" 
-                strokeLinejoin="round" 
-                strokeWidth={2} 
-                d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" 
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
               />
             </svg>
             Watch now
@@ -183,12 +198,32 @@ function FeaturedMovie({ movies, onAnimeClick }) {
                 className="p-2 rounded-full bg-black/50 text-white backdrop-blur-sm transition-colors hover:bg-black/70"
               >
                 {isPlaying ? (
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 9v6m4-6v6" />
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M10 9v6m4-6v6"
+                    />
                   </svg>
                 ) : (
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
+                    />
                   </svg>
                 )}
               </button>
@@ -196,7 +231,11 @@ function FeaturedMovie({ movies, onAnimeClick }) {
                 onClick={handleMuteToggle}
                 className="p-2 rounded-full bg-black/50 text-white backdrop-blur-sm transition-colors hover:bg-black/70"
               >
-                {isMuted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
+                {isMuted ? (
+                  <VolumeX className="h-5 w-5" />
+                ) : (
+                  <Volume2 className="h-5 w-5" />
+                )}
               </button>
             </>
           )}
@@ -209,9 +248,9 @@ function FeaturedMovie({ movies, onAnimeClick }) {
           <button
             key={index}
             className={`w-2 h-2 rounded-full transition-all ${
-              index === currentIndex 
-                ? 'bg-white w-6' 
-                : 'bg-white/50 hover:bg-white/75'
+              index === currentIndex
+                ? "bg-white w-6"
+                : "bg-white/50 hover:bg-white/75"
             }`}
             onClick={() => {
               setCurrentIndex(index);
@@ -237,9 +276,9 @@ export default function Home() {
           getFeaturedMovie(),
           getBestAnime(),
           getPopularAnime(),
-          getRecentAnime()
+          getRecentAnime(),
         ]);
-        
+
         setFeaturedMovies(featured || []);
         setBestAnime(best || []);
         setPopularAnime(popular || []);
@@ -285,26 +324,47 @@ export default function Home() {
                 viewBox="0 0 24 24"
                 stroke="currentColor"
               >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h8m-8 6h16" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M4 6h16M4 12h8m-8 6h16"
+                />
               </svg>
             </label>
             <ul
               tabIndex={0}
               className="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52"
             >
-              <li><a href="/">Home</a></li>
-              <li><a href="/search">Search</a></li>
-              <li><a href="/bookmarks">Bookmarks</a></li>
-              <li><a href="/profile">Profile</a></li>
+              <li>
+                <a href="/">Home</a>
+              </li>
+              <li>
+                <a href="/search">Search</a>
+              </li>
+              <li>
+                <a href="/bookmarks">Bookmarks</a>
+              </li>
+              <li>
+                <a href="/profile">Profile</a>
+              </li>
             </ul>
           </div>
         </div>
         <div className="navbar-center hidden lg:flex">
           <ul className="menu menu-horizontal px-1">
-            <li><a href="/">Home</a></li>
-            <li><a href="/search">Search</a></li>
-            <li><a href="/bookmarks">Bookmarks</a></li>
-            <li><a href="/profile">Profile</a></li>
+            <li>
+              <a href="/">Home</a>
+            </li>
+            <li>
+              <a href="/search">Search</a>
+            </li>
+            <li>
+              <a href="/bookmarks">Bookmarks</a>
+            </li>
+            <li>
+              <a href="/profile">Profile</a>
+            </li>
           </ul>
         </div>
         <div className="navbar-end">
@@ -333,7 +393,10 @@ export default function Home() {
           {/* Featured Movie Section */}
           <div className="min-h-[400px]">
             {featuredMovies.length > 0 ? (
-              <FeaturedMovie movies={featuredMovies} onAnimeClick={handleAnimeClick} />
+              <FeaturedMovie
+                movies={featuredMovies}
+                onAnimeClick={handleAnimeClick}
+              />
             ) : (
               <div className="h-96 bg-muted animate-pulse rounded-xl" />
             )}

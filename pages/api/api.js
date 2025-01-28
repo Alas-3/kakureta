@@ -17,10 +17,10 @@ export async function getBestAnime() {
   // If not cached, fetch the data
   const response = await fetch("https://api.jikan.moe/v4/top/anime");
   const data = await response.json();
-  
+
   // Check if the data has results
   if (!data.data || data.data.length === 0) {
-    return [];  // Return an empty array if no results are found
+    return []; // Return an empty array if no results are found
   }
 
   // Limit the results to the first 20
@@ -56,7 +56,7 @@ export async function getPopularAnime() {
 
   // Check if the data has results
   if (!data.data || data.data.length === 0) {
-    return [];  // Return an empty array if no results are found
+    return []; // Return an empty array if no results are found
   }
 
   // Limit the results to the first 20
@@ -88,14 +88,14 @@ export async function getAnimeDetails(id) {
   // Fetch the data from Zoro if not cached
   try {
     const response = await fetch(`${BASE_URL}/anime/zoro/info?id=${id}`);
-    
+
     // Check for successful response
     if (!response.ok) {
       throw new Error("Failed to fetch anime details");
     }
-    
+
     const data = await response.json();
-    
+
     // Handle cases where the API response might be incomplete or malformed
     if (!data || !data.title || !data.episodes) {
       return {
@@ -108,16 +108,17 @@ export async function getAnimeDetails(id) {
 
     // Prepare the result object
     const result = {
-      title: data.title?.romaji || "Unknown",  // Use a fallback if title is missing
-      rating: data.averageScore ? (data.averageScore / 10).toFixed(1) : "N/A",  // Ensure rating is a number
-      synopsis: data.description || "No description available",  // Use fallback for synopsis
-      episodes: data.episodes?.map((ep) => ({
-        number: ep.number || "Unknown",  // Fallback if episode number is missing
-        title: ep.title || "Unknown",    // Fallback if episode title is missing
-        audio: ep.audio || "N/A",        // Fallback if audio info is missing
-        bitrate: ep.bitrate ? `${ep.bitrate} kb/s` : "N/A",  // Fallback if bitrate is missing
-        runtime: ep.duration ? `${ep.duration} min` : "N/A",  // Fallback if runtime is missing
-      })) || [],
+      title: data.title?.romaji || "Unknown", // Use a fallback if title is missing
+      rating: data.averageScore ? (data.averageScore / 10).toFixed(1) : "N/A", // Ensure rating is a number
+      synopsis: data.description || "No description available", // Use fallback for synopsis
+      episodes:
+        data.episodes?.map((ep) => ({
+          number: ep.number || "Unknown", // Fallback if episode number is missing
+          title: ep.title || "Unknown", // Fallback if episode title is missing
+          audio: ep.audio || "N/A", // Fallback if audio info is missing
+          bitrate: ep.bitrate ? `${ep.bitrate} kb/s` : "N/A", // Fallback if bitrate is missing
+          runtime: ep.duration ? `${ep.duration} min` : "N/A", // Fallback if runtime is missing
+        })) || [],
     };
 
     // Cache the result in localStorage for future use
@@ -148,27 +149,29 @@ export async function getFeaturedMovie() {
     }
 
     const result = data.data
-      .filter(anime => anime.trailer?.embed_url)
+      .filter((anime) => anime.trailer?.embed_url)
       .slice(0, 5)
       .map((anime) => ({
         id: anime.mal_id,
         title: anime.title || anime.title_english || "No title",
         images: {
           jpg: {
-            large_image_url: anime.images?.jpg?.large_image_url || 
-                            anime.images?.webp?.large_image_url ||
-                            anime.images?.jpg?.image_url,
-            image_url: anime.images?.jpg?.image_url
-          }
+            large_image_url:
+              anime.images?.jpg?.large_image_url ||
+              anime.images?.webp?.large_image_url ||
+              anime.images?.jpg?.image_url,
+            image_url: anime.images?.jpg?.image_url,
+          },
         },
         synopsis: anime.synopsis || "No description available",
         trailer: {
           embed_url: anime.trailer.embed_url,
           images: {
-            maximum_image_url: anime.trailer.images.maximum_image_url || 
-                             anime.trailer.images.large_image_url
-          }
-        }
+            maximum_image_url:
+              anime.trailer.images.maximum_image_url ||
+              anime.trailer.images.large_image_url,
+          },
+        },
       }));
 
     return result;
@@ -190,7 +193,9 @@ export async function getRecentAnime() {
 
   try {
     // Fetch recently aired anime from Jikan API
-    const response = await fetch("https://api.jikan.moe/v4/seasons/now?sort=start_date");
+    const response = await fetch(
+      "https://api.jikan.moe/v4/seasons/now?sort=start_date"
+    );
     const data = await response.json();
 
     if (!data.data || data.data.length === 0) {
@@ -199,7 +204,7 @@ export async function getRecentAnime() {
 
     // Process and sort by air date
     const result = data.data
-      .filter(anime => anime.aired?.from) // Only include anime with air dates
+      .filter((anime) => anime.aired?.from) // Only include anime with air dates
       .sort((a, b) => new Date(b.aired.from) - new Date(a.aired.from)) // Sort by most recent
       .slice(0, 20) // Limit to 20 results
       .map((anime) => ({
@@ -225,59 +230,60 @@ export async function getRecentAnime() {
 // pages/api/api.js
 export const getSearchResults = async (query, page) => {
   try {
-    
-    const response = await fetch(`${BASE_URL}/anime/zoro/${query}?page=${page}`)
-    const data = await response.json()
-    
+    const response = await fetch(
+      `https://kakureta-consumet-api.vercel.app/anime/zoro/${query}?page=${page}`
+    );
+    const data = await response.json();
+
     // Process the results to better handle series vs movies
-    const processedResults = (data.results || []).map(result => {
+    const processedResults = (data.results || []).map((result) => {
       // Extract year and type from the title
-      const yearMatch = result.title.match(/\((\d{4})\)/)
-      const year = yearMatch ? yearMatch[1] : null
-      
+      const yearMatch = result.title.match(/\((\d{4})\)/);
+      const year = yearMatch ? yearMatch[1] : null;
+
       // Determine if it's a movie or TV series
-      const isMovie = result.title.toLowerCase().includes('movie')
-      const type = isMovie ? 'Movie' : 'TV Series'
-      
+      const isMovie = result.title.toLowerCase().includes("movie");
+      const type = isMovie ? "Movie" : "TV Series";
+
       return {
         ...result,
         year,
         type,
-        duration: result.duration || 'Unknown',
+        duration: result.duration || "Unknown",
         // Keep the original title for the MovieList component
-        title: result.title
-      }
-    })
+        title: result.title,
+      };
+    });
 
     // Sort results to prioritize main series over movies
     const sortedResults = processedResults.sort((a, b) => {
-      const aTitle = a.title.toLowerCase()
-      const bTitle = b.title.toLowerCase()
-      const searchQuery = query.toLowerCase()
+      const aTitle = a.title.toLowerCase();
+      const bTitle = b.title.toLowerCase();
+      const searchQuery = query.toLowerCase();
 
       // Exact matches get highest priority
-      if (aTitle === searchQuery && bTitle !== searchQuery) return -1
-      if (bTitle === searchQuery && aTitle !== searchQuery) return 1
+      if (aTitle === searchQuery && bTitle !== searchQuery) return -1;
+      if (bTitle === searchQuery && aTitle !== searchQuery) return 1;
 
       // Then prioritize TV series over movies
       if (a.type !== b.type) {
-        return a.type === 'TV Series' ? -1 : 1
+        return a.type === "TV Series" ? -1 : 1;
       }
 
       // For same type, prefer newer content
       if (a.year !== b.year) {
-        return (b.year || '0') - (a.year || '0')
+        return (b.year || "0") - (a.year || "0");
       }
 
-      return 0
-    })
+      return 0;
+    });
 
     return {
       results: sortedResults,
       totalPages: data.totalPages || 0,
-    }
+    };
   } catch (error) {
-    console.error("Error fetching search results:", error)
-    return { results: [], totalPages: 0 }
+    console.error("Error fetching search results:", error);
+    return { results: [], totalPages: 0 };
   }
-}
+};

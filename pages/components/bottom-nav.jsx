@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import Link from "next/link"
+import Link from "next/link";
 
 export default function BottomNav() {
   return (
@@ -74,5 +74,5 @@ export default function BottomNav() {
         <span className="btm-nav-label">Profile</span>
       </Link>
     </div>
-  )
+  );
 }

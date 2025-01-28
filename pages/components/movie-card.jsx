@@ -1,5 +1,5 @@
-import { useRouter } from 'next/router';
-import Image from 'next/image';
+import { useRouter } from "next/router";
+import Image from "next/image";
 
 export default function AnimeCard({ title, image, year, duration }) {
   const router = useRouter();
@@ -25,13 +25,13 @@ export default function AnimeCard({ title, image, year, duration }) {
   };
 
   return (
-    <div 
+    <div
       onClick={() => handleAnimeClick(title)}
       className="group flex-shrink-0 w-[160px] cursor-pointer transition-transform hover:scale-[0.98]"
     >
       <div className="relative aspect-[3/4] rounded-lg overflow-hidden mb-2">
-        <Image 
-          src={image || "/placeholder.svg"} 
+        <Image
+          src={image || "/placeholder.svg"}
           alt={title}
           fill
           className="object-cover"
@@ -51,17 +51,19 @@ export default function AnimeCard({ title, image, year, duration }) {
               strokeWidth={2}
               d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
             />
-            <path 
-              strokeLinecap="round" 
-              strokeLinejoin="round" 
-              strokeWidth={2} 
-              d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" 
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
             />
           </svg>
         </div>
       </div>
       <div className="space-y-1">
-        <h3 className="font-medium text-sm text-foreground line-clamp-2">{title}</h3>
+        <h3 className="font-medium text-sm text-foreground line-clamp-2">
+          {title}
+        </h3>
         <div className="flex items-center text-xs text-muted-foreground">
           <span>{year}</span>
           {duration && (
