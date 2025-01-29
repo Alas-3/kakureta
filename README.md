@@ -1,40 +1,84 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/pages/api-reference/create-next-app).
+# 🎬 Kakureta.隠れた
 
-## Getting Started
+<div align="center">
+  <p>A modern streaming platform for anime enthusiasts, built with cutting-edge technologies.</p>
 
-First, run the development server:
+  [![Next.js](https://img.shields.io/badge/Next.js-black?style=flat-square&logo=next.js)](https://nextjs.org/)
+  [![Tailwind CSS](https://img.shields.io/badge/Tailwind-38B2AC?style=flat-square&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
+  [![DaisyUI](https://img.shields.io/badge/DaisyUI-5A0EF8?style=flat-square&logo=daisyui&logoColor=white)](https://daisyui.com/)
+</div>
+
+## ✨ Features
+
+- 🎯 **Real-time Streaming** - Custom streaming API with HLS support
+- 🔍 **Smart Search** - Advanced search functionality powered by Jikan API
+- 🎨 **Modern UI/UX** - Sleek design with DaisyUI components
+- 📱 **Responsive Design** - Seamless experience across all devices
+- 🚀 **Performance Optimized** - Built with Next.js for maximum efficiency
+- 🎵 **HLS Streaming** - High-quality video playback with HLS.js
+
+## 🛠️ Tech Stack
+
+- **Framework**: Next.js 14 with App Router
+- **Styling**: Tailwind CSS + DaisyUI
+- **Video**: HLS.js for adaptive streaming
+- **API**: Custom streaming backend + Jikan API
+- **Language**: JavaScript
+- **State Management**: React Context + Hooks
+- **Deployment**: Vercel
+
+## 🚀 Getting Started
 
 ```bash
+# Clone the repository
+git clone https://github.com/yourusername/animix.git
+
+# Navigate to the project
+cd animix
+
+# Install dependencies
+npm install
+
+# Start development server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 📖 Environment Variables
 
-You can start editing the page by modifying `pages/index.js`. The page auto-updates as you edit the file.
+Create a `.env.local` file in the root directory:
 
-[API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.js`.
+```env
+NEXT_PUBLIC_API_URL=your_api_url
+NEXT_PUBLIC_JIKAN_API=https://api.jikan.moe/v4
+```
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) instead of React pages.
+## 🌟 Core Features
 
-This project uses [`next/font`](https://nextjs.org/docs/pages/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Streaming Service
+- Custom streaming API implementation
+- HLS adaptive bitrate streaming
+- Buffer management
+- Quality selection
 
-## Learn More
+### Anime Database
+- Integration with Jikan API
+- Advanced search and filtering
+- Seasonal anime updates
+- Detailed anime information
 
-To learn more about Next.js, take a look at the following resources:
+### User Experience
+- Minimalist, modern interface
+- Dark/Light theme support
+- Responsive design
+- Custom video player
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn-pages-router) - an interactive Next.js tutorial.
+## ❌ DISCLAMER
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+This site does not store any files on our server, we only linked to the media which is hosted on 3rd party services.
 
-## Deploy on Vercel
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/pages/building-your-application/deploying) for more details.
+<div align="center">
+  Made with ❤️ by <a href="https://github.com/Alas-3">Alasss</a>
+</div>

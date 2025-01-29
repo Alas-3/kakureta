@@ -406,7 +406,7 @@ export default function Home() {
           <div className="space-y-8">
             {recentAnime.length > 0 && (
               <MovieList
-                title="Recently Aired"
+                title="Recently Released Anime"
                 movies={recentAnime}
                 seeAllLink="/category/recent"
                 onAnimeClick={handleAnimeClick}
@@ -415,7 +415,7 @@ export default function Home() {
 
             {bestAnime.length > 0 && (
               <MovieList
-                title="Best Anime"
+                title="Best Anime of All Time"
                 movies={bestAnime}
                 seeAllLink="/category/best"
                 onAnimeClick={handleAnimeClick}
@@ -424,7 +424,7 @@ export default function Home() {
 
             {popularAnime.length > 0 && (
               <MovieList
-                title="Popular"
+                title="Popular This Season"
                 movies={popularAnime}
                 seeAllLink="/category/popular"
                 onAnimeClick={handleAnimeClick}
