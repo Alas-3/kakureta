@@ -1,7 +1,7 @@
 # 🎬 Kakureta.隠れた
 
 <div align="center">
-  <p>A modern streaming platform for anime enthusiasts, built with cutting-edge technologies.</p>
+  <p>A modern WIP streaming platform for anime enthusiasts, built with cutting-edge technologies.</p>
 
   [![Next.js](https://img.shields.io/badge/Next.js-black?style=flat-square&logo=next.js)](https://nextjs.org/)
   [![Tailwind CSS](https://img.shields.io/badge/Tailwind-38B2AC?style=flat-square&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
