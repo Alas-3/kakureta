@@ -31,10 +31,10 @@
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/animix.git
+git clone https://github.com/Alas-3/kakureta.git
 
 # Navigate to the project
-cd animix
+cd kakureta
 
 # Install dependencies
 npm install
@@ -68,7 +68,7 @@ NEXT_PUBLIC_JIKAN_API=https://api.jikan.moe/v4
 
 ### User Experience
 - Minimalist, modern interface
-- Dark/Light theme support
+- Dark theme
 - Responsive design
 - Custom video player
 
