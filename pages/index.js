@@ -293,7 +293,7 @@ export default function Home() {
 
   const handleAnimeClick = async (animeTitle) => {
     try {
-      const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
+      const BASE_URL = process.env.NEXT_PUBLIC_CONSUMET_API_URL;
       const response = await fetch(
         `${BASE_URL}/anime/zoro/${encodeURIComponent(animeTitle)}?page=1`
       );
