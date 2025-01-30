@@ -288,3 +288,45 @@ export const getSearchResults = async (query, page) => {
     return { results: [], totalPages: 0 };
   }
 };
+
+
+// Add this new function to get recently aired episodes
+export async function getRecentEpisodes() {
+  if (isBrowser) {
+    const cachedData = localStorage.getItem("recentEpisodesData");
+    if (cachedData) {
+      return JSON.parse(cachedData);
+    }
+  }
+
+  try {
+    const BASE_URL = process.env.NEXT_PUBLIC_CONSUMET_API_URL;
+    const response = await fetch(`${BASE_URL}/anime/zoro/recent-episodes`);
+    const data = await response.json();
+
+    if (!data.results || data.results.length === 0) {
+      return [];
+    }
+
+    // Process and format the episode data
+    const result = data.results.slice(0, 20).map((episode) => ({
+      id: episode.id,
+      animeId: episode.animeId,
+      episodeNumber: episode.episodeNumber || 0,
+      title: episode.title || `Episode ${episode.episodeNumber}`,
+      image: episode.image || '/fallback-episode-image.jpg',
+      airedAt: episode.airDate ? new Date(episode.airDate).toLocaleDateString() : 'Unknown date',
+      url: episode.url,
+      animeTitle: episode.animeTitle || 'Unknown Anime'
+    }));
+
+    if (isBrowser) {
+      localStorage.setItem("recentEpisodesData", JSON.stringify(result));
+    }
+
+    return result;
+  } catch (error) {
+    console.error("Error fetching recent episodes:", error);
+    return [];
+  }
+}

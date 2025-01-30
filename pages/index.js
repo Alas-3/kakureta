@@ -9,6 +9,7 @@ import {
   getBestAnime,
   getPopularAnime,
   getRecentAnime,
+  getRecentEpisodes,
 } from "@/pages/api/api";
 import { useRouter } from "next/navigation";
 import React, { useState, useEffect, useRef } from "react";
@@ -268,21 +269,24 @@ export default function Home() {
   const [bestAnime, setBestAnime] = useState([]);
   const [popularAnime, setPopularAnime] = useState([]);
   const [recentAnime, setRecentAnime] = useState([]);
+  const [recentEpisodes, setRecentEpisodes] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [featured, best, popular, recent] = await Promise.all([
+        const [featured, best, popular, recent, episodesData] = await Promise.all([
           getFeaturedMovie(),
           getBestAnime(),
           getPopularAnime(),
           getRecentAnime(),
+          getRecentEpisodes(),
         ]);
 
         setFeaturedMovies(featured || []);
         setBestAnime(best || []);
         setPopularAnime(popular || []);
         setRecentAnime(recent || []);
+        setRecentEpisodes(episodesData || []);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -412,6 +416,16 @@ export default function Home() {
                 onAnimeClick={handleAnimeClick}
               />
             )}
+
+{recentEpisodes.length > 0 && (
+    <MovieList
+      title="Recently Aired Episodes"
+      movies={recentEpisodes}
+      seeAllLink="/category/recent-episodes"
+      onAnimeClick={handleAnimeClick}
+      isEpisodeList={true} // Optional: Add this prop if you want to handle episodes differently
+    />
+  )}
 
             {bestAnime.length > 0 && (
               <MovieList
