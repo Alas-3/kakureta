@@ -74,8 +74,11 @@ NEXT_PUBLIC_JIKAN_API=https://api.jikan.moe/v4
 
 ## ❌ DISCLAMER
 
-This site does not store any files on our server, we only linked to the media which is hosted on 3rd party services.
+Kakureta does not host or store any anime content. All videos and media are sourced from publicly available third-party sources. We do not own, control, or endorse any content streamed on our platform. If you have any legal concerns regarding any content, we strongly recommend contacting the respective sources and not us for removal requests.
 
+## DMCA POLICY
+
+If you believe any linked content infringes your copyright, please contact the respective third-party sources and not us. Kakureta only indexes publicly available content and does not have control over its availability.
 
 ---
 
